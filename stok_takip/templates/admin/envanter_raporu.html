@@ -1,0 +1,160 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Envanter Raporu{% endblock %}
+
+{% block content %}
+<style>
+    .rapor-container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        margin: 20px;
+    }
+    
+    .rapor-baslik {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 3px solid #417690;
+        padding-bottom: 15px;
+    }
+    
+    .rapor-baslik h1 {
+        color: #417690;
+        margin-bottom: 5px;
+    }
+    
+    .rapor-tarih {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .urun-card {
+        margin-bottom: 25px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        background: #f9f9f9;
+    }
+    
+    .urun-baslik {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #417690;
+    }
+    
+    .urun-baslik h3 {
+        margin: 0;
+        color: #333;
+    }
+    
+    .toplam-badge {
+        background: #417690;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+    
+    .lot-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    
+    .lot-table th {
+        background: #e8f4f8;
+        padding: 10px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #417690;
+    }
+    
+    .lot-table td {
+        padding: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .lot-table tr:hover {
+        background: #f5f5f5;
+    }
+    
+    .skt-yakin {
+        background: #fff3cd;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    
+    .skt-gecmis {
+        background: #f8d7da;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    
+    @media print {
+        .breadcrumbs, #header, .submit-row { display: none; }
+    }
+</style>
+
+<div class="rapor-container">
+    <div class="rapor-baslik">
+        <h1>ENVANTER RAPORU</h1>
+        <p class="rapor-tarih">Tarih: {{ tarih|date:"d.m.Y" }}</p>
+    </div>
+
+    {% for item in urunler %}
+    <div class="urun-card">
+        <div class="urun-baslik">
+            <div>
+                <h3>{{ item.urun.stok_no }} - {{ item.urun.urun_adi }}</h3>
+                <small style="color: #666;">Kategori: {{ item.urun.kategori.kategori_adi }}</small>
+            </div>
+            <div class="toplam-badge">
+                Toplam: {{ item.toplam }} {{ item.urun.birim }}
+            </div>
+        </div>
+
+        <table class="lot-table">
+            <thead>
+                <tr>
+                    <th>Lot No</th>
+                    <th>Konum</th>
+                    <th>Miktar</th>
+                    <th>SKT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lot in item.lotlar %}
+                <tr>
+                    <td>{{ lot.lot_no }}</td>
+                    <td>{{ lot.konum }}</td>
+                    <td><strong>{{ lot.miktar }} {{ item.urun.birim }}</strong></td>
+                    <td>
+                        {% if lot.son_kullanma_tarihi %}
+                            {% now "Y-m-d" as bugun %}
+                            {% if lot.son_kullanma_tarihi|date:"Y-m-d" < bugun %}
+                                <span class="skt-gecmis">Geçmiş: {{ lot.son_kullanma_tarihi|date:"d.m.Y" }}</span>
+                            {% else %}
+                                {{ lot.son_kullanma_tarihi|date:"d.m.Y" }}
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()" class="button" style="padding: 10px 20px;">Yazdır</button>
+    </div>
+</div>
+{% endblock %}
